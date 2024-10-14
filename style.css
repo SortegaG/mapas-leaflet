@@ -1,0 +1,11 @@
+#map {
+    height: 400px;
+    width: 350px;
+    border: 1px solid black;
+}
+
+#map2 {
+    height: 800px;
+    width: 800px;
+    border: 1px solid black;
+}
