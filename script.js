@@ -6,20 +6,39 @@ let magnitud;
 let resultados;
 let fechaConv;
 
+if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(position => {
+        console.log(`Latitud: ${position.coords.latitude}\nLongitud: ${position.coords.longitude}`);
 
-var map = L.map("map").setView([40.4233, -3.6927], 13);
+        var map = L.map("map").setView([position.coords.latitude, position.coords.longitude], 13);
 
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution:
-        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
-var marker = L.marker([40.4233, -3.6927]).addTo(map);
+    var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
+
+    });
+} else {
+    console.warn("Tu navegador no soporta Geolocalización!! ");
+}
+
+
+//var map = L.map("map").setView([40.4233, -3.6927], 13);
+
+// L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+//     maxZoom: 19,
+//     attribution:
+//         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+// }).addTo(map);
+
+// var marker = L.marker([40.4233, -3.6927]).addTo(map);
 
 // -------------------------------------------------------------------------------------------
 
-async function getEarthquake() {  
+async function getEarthquake() {
     try {
         const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson');
         if (!response.ok) {
@@ -28,7 +47,7 @@ async function getEarthquake() {
 
         const data = await response.json();
         resultados = data.features;
-        
+
         titulo = resultados.map(dato => dato.properties.title);
         fecha = resultados.map(dato => new Date(dato.properties.time));
         ubicacion = resultados.map(dato => dato.geometry.coordinates);
@@ -47,28 +66,28 @@ const getIconByMagnitude = (magnitude) => {
     if (magnitude <= 2) {
         return L.icon({
             iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-green.png',
-            iconSize: [25, 41], // Tamaño más pequeño para terremotos leves
+            iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
         });
     } else if (magnitude <= 4) {
         return L.icon({
             iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-orange.png',
-            iconSize: [30, 45], // Tamaño intermedio
+            iconSize: [30, 45],
             iconAnchor: [15, 45],
             popupAnchor: [1, -34]
         });
     } else if (magnitude <= 6) {
         return L.icon({
             iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
-            iconSize: [35, 50], // Tamaño más grande para terremotos moderados
+            iconSize: [35, 50],
             iconAnchor: [17, 50],
             popupAnchor: [1, -34]
         });
     } else {
         return L.icon({
             iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-black.png',
-            iconSize: [40, 55], // Ícono más grande para terremotos fuertes
+            iconSize: [40, 55],
             iconAnchor: [20, 55],
             popupAnchor: [1, -34]
         });
@@ -81,14 +100,14 @@ const getIconByMagnitude = (magnitude) => {
 var map2 = L.map("map2").setView([40.4233, -3.6927], 13);
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 3, 
+    maxZoom: 3,
     attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map2);
 
 async function addMarkers() {
     await getEarthquake();
-    
+
     for (let i = 0; i < ubicacion.length; i++) {
 
         const icono = getIconByMagnitude(magnitud[i]); // Asignar el ícono según la magnitud
