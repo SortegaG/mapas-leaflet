@@ -108,16 +108,47 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 async function addMarkers() {
     await getEarthquake();
 
-    for (let i = 0; i < ubicacion.length; i++) {
+    // Obtener los valores de los filtros
+    const startDateInput = document.getElementById("startDate").value;
+    const endDateInput = document.getElementById("endDate").value;
+    const magnitudeInput = parseFloat(document.getElementById("magnitude").value) || 0; // Si no se introduce, usa 0
 
-        const icono = getIconByMagnitude(magnitud[i]); // Asignar el ícono según la magnitud
-        const marcador2 = L.marker([ubicacion[i][1], ubicacion[i][0]], { icon: icono }).addTo(map2);
-        marcador2.bindPopup(`<p><strong>Título:</strong><br />${titulo[i]}</p>
-                            <p><strong>Ubicación (Lat, Long):</strong><br />${ubicacion[i][1]}, ${ubicacion[i][0]}</p>
-                            <p><strong>Código:</strong><br />${codigo[i]}</p>
-                            <p><strong>Fecha:</strong><br />${fecha[i]}</p>
-                            <p><strong>Magnitud (escala Richter):</strong><br />${magnitud[i]}</p>`).openPopup();
+    // Convertir las fechas a formato Date
+    const startDate = startDateInput ? new Date(startDateInput) : null;
+    const endDate = endDateInput ? new Date(endDateInput) : null;
+
+    // Limpiar el mapa antes de añadir nuevos marcadores
+    map2.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+            map2.removeLayer(layer);
+        }
+    });
+
+    for (let i = 0; i < ubicacion.length; i++) {
+        const fechaTerremoto = fecha[i];
+        const magnitudTerremoto = magnitud[i];
+
+        // Aplicar los filtros de fecha y magnitud
+        if (
+            (!startDate || fechaTerremoto >= startDate) &&
+            (!endDate || fechaTerremoto <= endDate) &&
+            magnitudTerremoto >= magnitudeInput
+        ) {
+            const icono = getIconByMagnitude(magnitudTerremoto); // Asignar el ícono según la magnitud
+            const marcador2 = L.marker([ubicacion[i][1], ubicacion[i][0]], { icon: icono }).addTo(map2);
+            marcador2.bindPopup(`<p><strong>Título:</strong><br />${titulo[i]}</p>
+                                <p><strong>Ubicación (Lat, Long):</strong><br />${ubicacion[i][1]}, ${ubicacion[i][0]}</p>
+                                <p><strong>Código:</strong><br />${codigo[i]}</p>
+                                <p><strong>Fecha:</strong><br />${fechaTerremoto}</p>
+                                <p><strong>Magnitud (escala Richter):</strong><br />${magnitudTerremoto}</p>`).openPopup();
+        }
     }
 }
 
+// Función para aplicar los filtros al hacer clic en el botón
+function applyFilters() {
+    addMarkers();
+}
+
+// Inicializar el mapa
 addMarkers();
